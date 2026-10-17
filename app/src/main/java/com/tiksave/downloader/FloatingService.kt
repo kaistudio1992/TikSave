@@ -29,9 +29,25 @@ class FloatingService : Service() {
             setBackgroundColor(0xFF119B83.toInt())
             elevation = 12f
             setOnClickListener {
-                Toast.makeText(this@FloatingService,
-                    "Butang kekal di TikTok. Fungsi muat turun automatik belum disambungkan.",
-                    Toast.LENGTH_SHORT).show()
+                val url = getSharedPreferences("tiksave", MODE_PRIVATE)
+                    .getString("video_url", null)
+                if (url.isNullOrBlank()) {
+                    Toast.makeText(this@FloatingService,
+                        "Kongsi pautan TikTok ke TikSave dahulu.",
+                        Toast.LENGTH_LONG).show()
+                } else {
+                    Toast.makeText(this@FloatingService,
+                        "Mula memuat turun video...", Toast.LENGTH_SHORT).show()
+                    TikSaveDownloader.download(this@FloatingService, url) { result ->
+                        android.os.Handler(android.os.Looper.getMainLooper()).post {
+                            val message = result.fold(
+                                { "Muat turun selesai: ${it.name}" },
+                                { "Muat turun gagal: ${it.message ?: "Ralat tidak diketahui"}" }
+                            )
+                            Toast.makeText(this@FloatingService, message, Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
             }
         }
         bubble = view

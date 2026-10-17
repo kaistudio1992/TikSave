@@ -3,7 +3,6 @@ package com.tiksave.downloader
 import android.content.Context
 import com.yausername.youtubedl_android.YoutubeDL
 import com.yausername.youtubedl_android.YoutubeDLRequest
-import com.yausername.youtubedl_android.YoutubeDLException
 import com.yausername.ffmpeg.FFmpeg
 import java.io.File
 import java.util.concurrent.Executors

@@ -85,6 +85,10 @@ class MainActivity : Activity() {
             val shared = intent.getStringExtra(Intent.EXTRA_TEXT)?.trim().orEmpty()
             if (shared.isNotBlank()) {
                 receivedUrl = shared
+                getSharedPreferences("tiksave", MODE_PRIVATE)
+                    .edit()
+                    .putString("video_url", shared)
+                    .apply()
                 status.text = "Pautan diterima:\n$shared\n\nTekan BUKA PAUTAN untuk melihat video."
             }
         }
