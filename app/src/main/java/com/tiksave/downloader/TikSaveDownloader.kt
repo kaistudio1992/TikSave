@@ -1,6 +1,7 @@
 package com.tiksave.downloader
 
 import android.content.Context
+import android.util.Log
 import com.yausername.youtubedl_android.YoutubeDL
 import com.yausername.youtubedl_android.YoutubeDLRequest
 import com.yausername.ffmpeg.FFmpeg
@@ -27,8 +28,11 @@ object TikSaveDownloader {
                     throw IllegalStateException("Tidak dapat menyediakan folder muat turun.")
                 }
 
+                Log.i("TikSaveInit", "Memulakan YoutubeDL")
                 YoutubeDL.getInstance().init(app)
+                Log.i("TikSaveInit", "YoutubeDL berjaya; memulakan FFmpeg")
                 FFmpeg.getInstance().init(app)
+                Log.i("TikSaveInit", "FFmpeg berjaya; memulakan download")
 
                 val outputTemplate = File(outputDir, "%(title).150B-%(id)s.%(ext)s")
                     .absolutePath
@@ -51,6 +55,7 @@ object TikSaveDownloader {
 
                 onResult(Result.success(resultFile))
             } catch (error: Throwable) {
+                Log.e("TikSaveInit", "Gagal: ${error.javaClass.name}: ${error.message}", error)
                 onResult(Result.failure(error))
             }
         }
