@@ -8,6 +8,13 @@ import android.provider.Settings
 import android.view.Gravity
 import android.view.View
 import android.widget.Button
+import android.webkit.WebViewClient
+import android.webkit.WebView
+import android.webkit.WebChromeClient
+import android.widget.EditText
+import android.view.inputmethod.EditorInfo
+import android.view.ViewGroup
+import android.graphics.Color
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -15,6 +22,103 @@ import android.widget.Toast
 class MainActivity : Activity() {
     private lateinit var status: TextView
     private var receivedUrl: String = ""
+    private var internalWebView: WebView? = null
+
+
+    private fun openInternalBrowser() {
+        val root = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(16, 16, 16, 16)
+            setBackgroundColor(Color.rgb(17, 19, 27))
+        }
+
+        val address = EditText(this).apply {
+            hint = "Masukkan URL video atau laman web"
+            setTextColor(Color.WHITE)
+            setHintTextColor(Color.LTGRAY)
+            singleLine = true
+            inputType = android.text.InputType.TYPE_TEXT_VARIATION_URI
+            imeOptions = EditorInfo.IME_ACTION_GO
+            setText(receivedUrl)
+        }
+
+        val controls = LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+        }
+
+        val go = Button(this).apply { text = "GO" }
+        val download = Button(this).apply { text = "DOWNLOAD" }
+        val back = Button(this).apply { text = "KEMBALI" }
+
+        val web = WebView(this).apply {
+            settings.javaScriptEnabled = true
+            settings.domStorageEnabled = true
+            webViewClient = WebViewClient()
+            webChromeClient = WebChromeClient()
+        }
+        internalWebView = web
+
+        fun loadAddress() {
+            var url = address.text.toString().trim()
+            if (url.isBlank()) {
+                Toast.makeText(this, "Masukkan URL dahulu", Toast.LENGTH_SHORT).show()
+                return
+            }
+            if (!url.startsWith("https://") && !url.startsWith("http://")) {
+                url = "https://$url"
+            }
+            address.setText(url)
+            web.loadUrl(url)
+        }
+
+        go.setOnClickListener { loadAddress() }
+        address.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_GO) {
+                loadAddress()
+                true
+            } else false
+        }
+
+        download.setOnClickListener {
+            val url = web.url ?: address.text.toString().trim()
+            if (url.startsWith("https://") || url.startsWith("http://")) {
+                receivedUrl = url
+                getSharedPreferences("tiksave", MODE_PRIVATE)
+                    .edit()
+                    .putString("video_url", url)
+                    .apply()
+                Toast.makeText(this, "Memulakan muat turun...", Toast.LENGTH_SHORT).show()
+                TikSaveDownloader.download(this, url) { result ->
+                    runOnUiThread {
+                        val message = result.fold(
+                            { "Berjaya: ${it.name}" },
+                            { "Gagal: ${it.message ?: it.javaClass.simpleName}" }
+                        )
+                        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+                    }
+                }
+            } else {
+                Toast.makeText(this, "Buka halaman dahulu", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        back.setOnClickListener {
+            internalWebView = null
+            web.destroy()
+            recreate()
+        }
+
+        controls.addView(go, LinearLayout.LayoutParams(0, -2, 1f))
+        controls.addView(download, LinearLayout.LayoutParams(0, -2, 1.4f))
+        controls.addView(back, LinearLayout.LayoutParams(0, -2, 1f))
+        root.addView(address, LinearLayout.LayoutParams(-1, -2))
+        root.addView(controls, LinearLayout.LayoutParams(-1, -2))
+        root.addView(web, LinearLayout.LayoutParams(-1, 0, 1f))
+
+        setContentView(root)
+        if (receivedUrl.isNotBlank()) loadAddress()
+        else web.loadUrl("https://www.google.com")
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,6 +140,12 @@ class MainActivity : Activity() {
         root.addView(label("Floating TikTok downloader", 16f, 0xFFB7C0D0.toInt()))
         status = label("Belum ada pautan diterima. Buka TikTok dan gunakan Share → TikSave.", 15f, 0xFFFFFFFF.toInt())
         root.addView(status)
+
+        val browserButton = Button(this).apply {
+            text = "BUKA BROWSER"
+            setOnClickListener { openInternalBrowser() }
+        }
+        root.addView(browserButton)
         val openLink = Button(this).apply {
             text = "BUKA PAUTAN VIDEO"
             setOnClickListener {
