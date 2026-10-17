@@ -28,7 +28,7 @@ class MainActivity : Activity() {
     private fun openInternalBrowser() {
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(16, 16, 16, 16)
+            setPadding(16, 64, 16, 16)
             setBackgroundColor(Color.rgb(17, 19, 27))
         }
 
@@ -53,7 +53,24 @@ class MainActivity : Activity() {
         val web = WebView(this).apply {
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
-            webViewClient = WebViewClient()
+            webViewClient = object : WebViewClient() {
+                override fun shouldOverrideUrlLoading(
+                    view: WebView,
+                    request: android.webkit.WebResourceRequest
+                ): Boolean {
+                    val uri = request.url
+                    val scheme = uri.scheme?.lowercase() ?: ""
+                    if (scheme == "http" || scheme == "https") {
+                        return false
+                    }
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Pautan aplikasi TikTok tidak disokong dalam browser. Buka URL https://www.tiktok.com/",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    return true
+                }
+            }
             webChromeClient = WebChromeClient()
         }
         internalWebView = web
