@@ -14,6 +14,7 @@ import android.widget.Toast
 
 class MainActivity : Activity() {
     private lateinit var status: TextView
+    private var receivedUrl: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,6 +36,18 @@ class MainActivity : Activity() {
         root.addView(label("Floating TikTok downloader", 16f, 0xFFB7C0D0.toInt()))
         status = label("Belum ada pautan diterima. Buka TikTok dan gunakan Share → TikSave.", 15f, 0xFFFFFFFF.toInt())
         root.addView(status)
+        val openLink = Button(this).apply {
+            text = "BUKA PAUTAN VIDEO"
+            setOnClickListener {
+                if (receivedUrl.isBlank()) {
+                    Toast.makeText(this@MainActivity, "Kongsi pautan TikTok ke TikSave dahulu.", Toast.LENGTH_SHORT).show()
+                } else {
+                    val browser = Intent(Intent.ACTION_VIEW, Uri.parse(receivedUrl))
+                    startActivity(browser)
+                }
+            }
+        }
+        root.addView(openLink)
         val overlay = Button(this).apply {
             text = "AKTIFKAN FLOATING BUTTON"
             setOnClickListener {
@@ -71,7 +84,8 @@ class MainActivity : Activity() {
         if (intent?.action == Intent.ACTION_SEND) {
             val shared = intent.getStringExtra(Intent.EXTRA_TEXT)?.trim().orEmpty()
             if (shared.isNotBlank()) {
-                status.text = "Pautan diterima:\n$shared\n\nLangkah seterusnya: sambungkan resolver video yang sah."
+                receivedUrl = shared
+                status.text = "Pautan diterima:\n$shared\n\nTekan BUKA PAUTAN untuk melihat video."
             }
         }
     }
