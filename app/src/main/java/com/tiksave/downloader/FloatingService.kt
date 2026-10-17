@@ -29,12 +29,9 @@ class FloatingService : Service() {
             setBackgroundColor(0xFF119B83.toInt())
             elevation = 12f
             setOnClickListener {
-                val launch = packageManager.getLaunchIntentForPackage(packageName)
-                launch?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                startActivity(launch)
                 Toast.makeText(this@FloatingService,
-                    "Untuk pautan video, gunakan TikTok Share → TikSave. Butang terapung tidak dapat membaca video terus.",
-                    Toast.LENGTH_LONG).show()
+                    "Butang kekal di TikTok. Fungsi muat turun automatik belum disambungkan.",
+                    Toast.LENGTH_SHORT).show()
             }
         }
         bubble = view
