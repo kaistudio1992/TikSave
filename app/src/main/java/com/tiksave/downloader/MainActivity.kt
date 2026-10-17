@@ -36,7 +36,7 @@ class MainActivity : Activity() {
             hint = "Masukkan URL video atau laman web"
             setTextColor(Color.WHITE)
             setHintTextColor(Color.LTGRAY)
-            singleLine = true
+            setSingleLine(true)
             inputType = android.text.InputType.TYPE_TEXT_VARIATION_URI
             imeOptions = EditorInfo.IME_ACTION_GO
             setText(receivedUrl)
