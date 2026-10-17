@@ -103,10 +103,7 @@ object TikSaveDownloader {
             }
             resolver.update(uri, completed, null, null)
 
-            return File(
-                "/storage/emulated/0/Movies/TikSave",
-                source.name
-            )
+            return source
         } catch (error: Throwable) {
             resolver.delete(uri, null, null)
             throw error
