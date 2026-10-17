@@ -17,6 +17,7 @@ object TikSaveDownloader {
         onResult: (Result<File>) -> Unit
     ) {
         executor.execute {
+            var stage = "Memulakan downloader"
             try {
                 val app = context.applicationContext
                 val cleanUrl = url.trim().lineSequence()
@@ -28,10 +29,13 @@ object TikSaveDownloader {
                     throw IllegalStateException("Tidak dapat menyediakan folder muat turun.")
                 }
 
+                stage = "Memulakan YoutubeDL"
                 Log.i("TikSaveInit", "Memulakan YoutubeDL")
                 YoutubeDL.getInstance().init(app)
+                stage = "Memulakan FFmpeg"
                 Log.i("TikSaveInit", "YoutubeDL berjaya; memulakan FFmpeg")
                 FFmpeg.getInstance().init(app)
+                stage = "Memuat turun video"
                 Log.i("TikSaveInit", "FFmpeg berjaya; memulakan download")
 
                 val outputTemplate = File(outputDir, "%(title).150B-%(id)s.%(ext)s")
@@ -56,7 +60,7 @@ object TikSaveDownloader {
                 onResult(Result.success(resultFile))
             } catch (error: Throwable) {
                 Log.e("TikSaveInit", "Gagal: ${error.javaClass.name}: ${error.message}", error)
-                onResult(Result.failure(error))
+                onResult(Result.failure(IllegalStateException("$stage — ${error.javaClass.name}: ${error.message ?: "tiada mesej"}", error)))
             }
         }
     }
