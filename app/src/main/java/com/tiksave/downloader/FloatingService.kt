@@ -1,0 +1,79 @@
+package com.tiksave.downloader
+
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.Service
+import android.content.Intent
+import android.graphics.PixelFormat
+import android.os.Build
+import android.os.IBinder
+import android.view.Gravity
+import android.view.WindowManager
+import android.widget.TextView
+import android.widget.Toast
+
+class FloatingService : Service() {
+    private lateinit var wm: WindowManager
+    private var bubble: TextView? = null
+
+    override fun onCreate() {
+        super.onCreate()
+        startForeground(1001, makeNotification())
+        wm = getSystemService(WINDOW_SERVICE) as WindowManager
+        val view = TextView(this).apply {
+            text = "⬇ DOWNLOAD"
+            textSize = 13f
+            setTextColor(0xFFFFFFFF.toInt())
+            setPadding(24, 18, 24, 18)
+            setBackgroundColor(0xFF119B83.toInt())
+            elevation = 12f
+            setOnClickListener {
+                val launch = packageManager.getLaunchIntentForPackage(packageName)
+                launch?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                startActivity(launch)
+                Toast.makeText(this@FloatingService,
+                    "Untuk pautan video, gunakan TikTok Share → TikSave. Butang terapung tidak dapat membaca video terus.",
+                    Toast.LENGTH_LONG).show()
+            }
+        }
+        bubble = view
+        val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+        else @Suppress("DEPRECATION") WindowManager.LayoutParams.TYPE_PHONE
+        val params = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            type,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+            PixelFormat.TRANSLUCENT
+        ).apply {
+            gravity = Gravity.TOP or Gravity.END
+            x = 18
+            y = 260
+        }
+        wm.addView(view, params)
+    }
+
+    private fun makeNotification(): Notification {
+        val channelId = "tiksave_overlay"
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(channelId, "TikSave floating button", NotificationManager.IMPORTANCE_LOW)
+            (getSystemService(NOTIFICATION_SERVICE) as NotificationManager).createNotificationChannel(channel)
+        }
+        val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            Notification.Builder(this, channelId) else Notification.Builder(this)
+        return builder.setContentTitle("TikSave aktif")
+            .setContentText("Floating button tersedia. Tekan untuk membuka TikSave.")
+            .setSmallIcon(android.R.drawable.stat_sys_download_done)
+            .build()
+    }
+
+    override fun onDestroy() {
+        bubble?.let { try { wm.removeView(it) } catch (_: Exception) {} }
+        bubble = null
+        super.onDestroy()
+    }
+
+    override fun onBind(intent: Intent?): IBinder? = null
+}
