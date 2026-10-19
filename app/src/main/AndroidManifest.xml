@@ -29,5 +29,18 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Display a user-requested floating shortcut to the app" />
         </service>
-    </application>
+
+        <service
+            android:name=".TikTokAccessibilityService"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/tiktok_accessibility_service" />
+        </service>
+
+</application>
 </manifest>

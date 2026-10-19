@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tiktok_accessibility_description">Detect TikTok video screen information for the user-requested downloader.</string>
+</resources>
