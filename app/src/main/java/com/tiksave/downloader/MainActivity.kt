@@ -58,17 +58,8 @@ class MainActivity : Activity() {
                     view: WebView,
                     request: android.webkit.WebResourceRequest
                 ): Boolean {
-                    val uri = request.url
-                    val scheme = uri.scheme?.lowercase() ?: ""
-                    if (scheme == "http" || scheme == "https") {
-                        return false
-                    }
-                    Toast.makeText(
-                        this@MainActivity,
-                        "Pautan aplikasi TikTok tidak disokong dalam browser. Buka URL https://www.tiktok.com/",
-                        Toast.LENGTH_LONG
-                    ).show()
-                    return true
+                    val scheme = request.url.scheme?.lowercase() ?: ""
+                    return scheme != "http" && scheme != "https"
                 }
             }
             webChromeClient = WebChromeClient()
