@@ -29,35 +29,33 @@ class FloatingService : Service() {
             setBackgroundColor(0xFF119B83.toInt())
             elevation = 12f
             setOnClickListener {
-                val prefs = getSharedPreferences("tiksave", MODE_PRIVATE)
-                val url = prefs.getString("video_url", null)
-                val detected = prefs.getBoolean("video_url_detected", false)
+            val clipboard = getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager
+            val clipText = if (clipboard.hasPrimaryClip()) {
+                clipboard.primaryClip?.getItemAt(0)?.coerceToText(this)?.toString()?.trim().orEmpty()
+            } else ""
 
-                if (!detected || url.isNullOrBlank()) {
-                    Toast.makeText(
-                        this@FloatingService,
-                        "Video belum dikesan. Pengesanan URL sebenar masih belum tersedia.",
-                        Toast.LENGTH_LONG
-                    ).show()
-                    return@setOnClickListener
-                }
+            val url = clipText.lineSequence()
+                .map { it.trim() }
+                .firstOrNull { it.startsWith("https://") || it.startsWith("http://") }
+                ?.takeIf { it.contains("tiktok.com", ignoreCase = true) }
 
+            if (url.isNullOrBlank()) {
                 Toast.makeText(
                     this@FloatingService,
-                    "Mula memuat turun video...",
-                    Toast.LENGTH_SHORT
+                    "Copy link video TikTok dahulu, kemudian tekan DOWNLOAD.",
+                    Toast.LENGTH_LONG
                 ).show()
+                return@setOnClickListener
+            }
 
-                TikSaveDownloader.download(this@FloatingService, url) { result ->
-                    android.os.Handler(android.os.Looper.getMainLooper()).post {
-                        val message = result.fold(
-                            { "Muat turun selesai: ${it.name}" },
-                            { "Muat turun gagal: ${it.message ?: "Ralat tidak diketahui"}" }
-                        )
-                        Toast.makeText(
-                            this@FloatingService, message, Toast.LENGTH_LONG
-                        ).show()
-                    }
+            Toast.makeText(this@FloatingService, "Mula memuat turun video...", Toast.LENGTH_SHORT).show()
+            TikSaveDownloader.download(this@FloatingService, url) { result ->
+                android.os.Handler(android.os.Looper.getMainLooper()).post {
+                    val message = result.fold(
+                        { "Muat turun selesai: ${it.name}" },
+                        { "Muat turun gagal: ${it.message ?: "Ralat tidak diketahui"}" }
+                    )
+                    Toast.makeText(this@FloatingService, message, Toast.LENGTH_LONG).show()
                 }
             }
         }
