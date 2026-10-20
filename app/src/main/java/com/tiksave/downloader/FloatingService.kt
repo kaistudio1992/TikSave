@@ -34,15 +34,28 @@ class FloatingService : Service() {
                     clipboard.primaryClip?.getItemAt(0)?.coerceToText(this@FloatingService)?.toString()?.trim().orEmpty()
                 } else ""
 
-                val url = clipText.lineSequence()
+                val clipboardUrl = clipText.lineSequence()
                     .map { it.trim() }
-                    .firstOrNull { (it.startsWith("https://") || it.startsWith("http://")) && it.contains("tiktok.com", ignoreCase = true) }
+                    .firstOrNull {
+                        (it.startsWith("https://") || it.startsWith("http://")) &&
+                            it.contains("tiktok.com", ignoreCase = true)
+                    }
+
+                val savedUrl = getSharedPreferences("tiksave", MODE_PRIVATE)
+                    .getString("video_url", null)
+                    ?.trim()
+                    ?.takeIf {
+                        (it.startsWith("https://") || it.startsWith("http://")) &&
+                            it.contains("tiktok.com", ignoreCase = true)
+                    }
+
+                val url = clipboardUrl ?: savedUrl
                 val detected = !url.isNullOrBlank()
 
                 if (!detected || url.isNullOrBlank()) {
                     Toast.makeText(
                         this@FloatingService,
-                        "Video belum dikesan. Pengesanan URL sebenar masih belum tersedia.",
+                        "Pautan TikTok tiada dalam clipboard. Buka TikTok, tekan Share > Copy link, kemudian tekan DOWNLOAD.",
                         Toast.LENGTH_LONG
                     ).show()
                     return@setOnClickListener
