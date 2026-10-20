@@ -28,6 +28,8 @@ class FloatingService : Service() {
             setPadding(24, 18, 24, 18)
             setBackgroundColor(0xFF119B83.toInt())
             elevation = 12f
+            isClickable = true
+            isFocusable = false
             setOnClickListener {
                 val clipboard = getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager
                 val clipText = if (clipboard.hasPrimaryClip()) {
