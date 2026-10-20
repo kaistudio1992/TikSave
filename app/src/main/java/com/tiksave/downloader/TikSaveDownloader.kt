@@ -46,9 +46,9 @@ object TikSaveDownloader {
 
                 val outputTemplate = File(outputDir, "%(title).150B-%(id)s.%(ext)s").absolutePath
                 val request = YoutubeDLRequest(cleanUrl)
+                    .addOption("--verbose")
                     .addOption("--no-playlist")
-                    .addOption("-f", "bestvideo*+bestaudio/best")
-                    .addOption("--merge-output-format", "mp4")
+                    .addOption("-f", "best[ext=mp4]/best")
                     .addOption("-o", outputTemplate)
                     .addOption("--no-warnings")
                     .addOption("--retries", "3")
