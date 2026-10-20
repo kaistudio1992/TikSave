@@ -146,26 +146,9 @@ class MainActivity : Activity() {
             }
         root.addView(label("TikSave", 30f, 0xFFFFFFFF.toInt()))
         root.addView(label("Floating TikTok downloader", 16f, 0xFFB7C0D0.toInt()))
-        status = label("Belum ada pautan diterima. Buka TikTok dan gunakan Share → TikSave.", 15f, 0xFFFFFFFF.toInt())
+        status = label("Salin pautan video TikTok. Kemudian tekan floating DOWNLOAD untuk memuat turun terus ke Gallery.", 15f, 0xFFFFFFFF.toInt())
         root.addView(status)
 
-        val browserButton = Button(this).apply {
-            text = "BUKA BROWSER"
-            setOnClickListener { openInternalBrowser() }
-        }
-        root.addView(browserButton)
-        val openLink = Button(this).apply {
-            text = "BUKA PAUTAN VIDEO"
-            setOnClickListener {
-                if (receivedUrl.isBlank()) {
-                    Toast.makeText(this@MainActivity, "Kongsi pautan TikTok ke TikSave dahulu.", Toast.LENGTH_SHORT).show()
-                } else {
-                    val browser = Intent(Intent.ACTION_VIEW, Uri.parse(receivedUrl))
-                    startActivity(browser)
-                }
-            }
-        }
-        root.addView(openLink)
         val overlay = Button(this).apply {
             text = "AKTIFKAN FLOATING BUTTON"
             setOnClickListener {
@@ -185,29 +168,55 @@ class MainActivity : Activity() {
         }
         root.addView(stop)
         root.addView(label(
-            "Penting: floating button sahaja tidak boleh membaca fail video dalaman TikTok. Versi ini menerima pautan melalui menu Share. Muat turun tanpa watermark hanya boleh dibuat jika sumber video tanpa watermark tersedia dan akses dibenarkan.",
+            "Cara guna: buka TikTok, salin pautan video, kemudian tekan floating DOWNLOAD. Video yang berjaya dimuat turun akan disimpan automatik ke Gallery.",
             13f, 0xFFFFD28A.toInt()
         ))
         setContentView(root)
         handleIncoming(intent)
+        refreshClipboardStatus()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        refreshClipboardStatus()
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
         handleIncoming(intent)
+        refreshClipboardStatus()
+    }
+
+    private fun refreshClipboardStatus() {
+        val clipboard = getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager
+        val text = if (clipboard.hasPrimaryClip()) {
+            clipboard.primaryClip?.getItemAt(0)?.coerceToText(this)?.toString()?.trim().orEmpty()
+        } else ""
+        val url = text.lineSequence().map { it.trim() }.firstOrNull {
+            (it.startsWith("https://") || it.startsWith("http://")) &&
+                it.contains("tiktok.com", ignoreCase = true)
+        }
+        if (!url.isNullOrBlank()) {
+            receivedUrl = url
+            status.text = "Pautan TikTok sedia:\n$url\n\nTekan floating DOWNLOAD untuk simpan ke Gallery."
+        }
     }
 
     private fun handleIncoming(intent: Intent?) {
         if (intent?.action == Intent.ACTION_SEND) {
             val shared = intent.getStringExtra(Intent.EXTRA_TEXT)?.trim().orEmpty()
-            if (shared.isNotBlank()) {
-                receivedUrl = shared
+            val url = shared.lineSequence().map { it.trim() }.firstOrNull {
+                (it.startsWith("https://") || it.startsWith("http://")) &&
+                    it.contains("tiktok.com", ignoreCase = true)
+            }
+            if (!url.isNullOrBlank()) {
+                receivedUrl = url
                 getSharedPreferences("tiksave", MODE_PRIVATE)
                     .edit()
-                    .putString("video_url", shared)
+                    .putString("video_url", url)
                     .apply()
-                status.text = "Pautan diterima:\n$shared\n\nTekan BUKA PAUTAN untuk melihat video."
+                status.text = "Pautan TikTok diterima:\n$url\n\nTekan floating DOWNLOAD untuk simpan ke Gallery."
             }
         }
     }
