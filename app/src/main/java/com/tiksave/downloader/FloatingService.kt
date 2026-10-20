@@ -62,13 +62,12 @@ class FloatingService : Service() {
                                 val detail = generateSequence(error as Throwable?) { it.cause }
                                     .map { "${it.javaClass.name}: ${it.message ?: "tiada mesej"}" }
                                     .joinToString("\n")
-                                val report = File(
-                                    getExternalFilesDir(null),
-                                    "TikSave-error.txt"
-                                )
-                                runCatching { report.writeText(detail) }
-                                "Muat turun gagal. Butiran: " +
-                                    (report.takeIf { it.exists() }?.absolutePath ?: detail.take(180))
+                                runCatching {
+                                    openFileOutput("TikSave-error.txt", MODE_PRIVATE).use {
+                                        it.write(detail.toByteArray(Charsets.UTF_8))
+                                    }
+                                }
+                                "Muat turun gagal. Butiran penuh disimpan dalam fail aplikasi."
                             }
                         )
                         Toast.makeText(
