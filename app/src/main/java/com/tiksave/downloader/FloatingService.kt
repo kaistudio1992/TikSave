@@ -30,17 +30,6 @@ class FloatingService : Service() {
             elevation = 12f
             isClickable = true
             isFocusable = false
-            setOnTouchListener { v, event ->
-                when (event.action) {
-                    android.view.MotionEvent.ACTION_DOWN -> true
-                    android.view.MotionEvent.ACTION_UP -> {
-                        v.performClick()
-                        true
-                    }
-                    android.view.MotionEvent.ACTION_CANCEL -> true
-                    else -> true
-                }
-            }
             setOnClickListener {
                 val clipboard = getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager
                 val clipText = if (clipboard.hasPrimaryClip()) {
@@ -117,7 +106,7 @@ class FloatingService : Service() {
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             type,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.END
