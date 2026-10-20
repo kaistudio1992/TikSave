@@ -42,5 +42,10 @@
                 android:resource="@xml/tiktok_accessibility_service" />
         </service>
 
+    <activity
+        android:name=".ClipboardCaptureActivity"
+        android:exported="false"
+        android:excludeFromRecents="true"
+        android:theme="@style/ClipboardCaptureTheme" />
 </application>
 </manifest>
