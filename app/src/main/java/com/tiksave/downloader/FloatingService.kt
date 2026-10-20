@@ -80,7 +80,7 @@ class FloatingService : Service() {
                                         it.write(detail.toByteArray(Charsets.UTF_8))
                                     }
                                 }
-                                "Muat turun gagal. Butiran penuh disimpan dalam fail aplikasi."
+                                "GAGAL: ${detail.take(220)}"
                             }
                         )
                         Toast.makeText(
