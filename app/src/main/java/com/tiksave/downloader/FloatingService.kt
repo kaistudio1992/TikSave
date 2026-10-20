@@ -80,7 +80,13 @@ class FloatingService : Service() {
                                         it.write(detail.toByteArray(Charsets.UTF_8))
                                     }
                                 }
-                                "GAGAL: ${detail.take(220)}"
+                                runCatching {
+                        val clipboard = getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                        clipboard.setPrimaryClip(
+                            android.content.ClipData.newPlainText("TikSave error", detail)
+                        )
+                    }
+                    "GAGAL: Ralat penuh disalin ke clipboard. Paste di Termux."
                             }
                         )
                         Toast.makeText(
