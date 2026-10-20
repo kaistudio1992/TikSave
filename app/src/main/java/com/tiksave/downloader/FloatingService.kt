@@ -58,7 +58,18 @@ class FloatingService : Service() {
                     android.os.Handler(android.os.Looper.getMainLooper()).post {
                         val message = result.fold(
                             { "Muat turun selesai: ${it.name}" },
-                            { "Muat turun gagal: ${it.message ?: "Ralat tidak diketahui"}" }
+                            { error ->
+                                val detail = generateSequence(error as Throwable?) { it.cause }
+                                    .map { "${it.javaClass.name}: ${it.message ?: "tiada mesej"}" }
+                                    .joinToString("\n")
+                                val report = File(
+                                    getExternalFilesDir(null),
+                                    "TikSave-error.txt"
+                                )
+                                runCatching { report.writeText(detail) }
+                                "Muat turun gagal. Butiran: " +
+                                    (report.takeIf { it.exists() }?.absolutePath ?: detail.take(180))
+                            }
                         )
                         Toast.makeText(
                             this@FloatingService, message, Toast.LENGTH_LONG
