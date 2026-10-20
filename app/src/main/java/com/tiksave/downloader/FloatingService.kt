@@ -51,7 +51,7 @@ class FloatingService : Service() {
                             it.contains("tiktok.com", ignoreCase = true)
                     }
 
-                val url = clipboardUrl ?: savedUrl
+                val url = clipboardUrl
                 val detected = !url.isNullOrBlank()
 
                 if (!detected || url.isNullOrBlank()) {
