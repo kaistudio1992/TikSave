@@ -32,9 +32,25 @@ class FloatingService : Service() {
             isFocusable = false
             setOnClickListener {
                 val clipboard = getSystemService(CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                val clipText = if (clipboard.hasPrimaryClip()) {
-                    clipboard.primaryClip?.getItemAt(0)?.coerceToText(this@FloatingService)?.toString()?.trim().orEmpty()
-                } else ""
+                val clipText = try {
+                    val clip = clipboard.primaryClip
+                    if (clipboard.hasPrimaryClip() && clip != null) {
+                        (0 until clip.itemCount)
+                            .mapNotNull { index ->
+                                runCatching {
+                                    clip.getItemAt(index)
+                                        ?.coerceToText(this@FloatingService)
+                                        ?.toString()
+                                        ?.trim()
+                                }.getOrNull()
+                            }
+                            .firstOrNull { !it.isNullOrBlank() }
+                            .orEmpty()
+                    } else ""
+                } catch (e: Exception) {
+                    android.util.Log.e("TikSaveClipboard", "Gagal membaca clipboard", e)
+                    ""
+                }
 
                 val clipboardUrl = clipText.lineSequence()
                     .map { it.trim() }
